@@ -31,12 +31,33 @@ class PostsPic_Action extends Typecho_Widget
         // 生成文件
         if (file_exists($imgPath)) {
             $result = true;
+            // 验证来源
+            if ($cfg->picLink) {
+                // 来源验证
+                $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+                if (empty($referer)) {
+                    header('HTTP/1.1 403 Forbidden');
+                    die('Access Denied');
+                }
+                // 来源域名
+                $host = parse_url($referer, PHP_URL_HOST);
+                $allowedHost = parse_url($options->siteUrl, PHP_URL_HOST);
+                if ($host !== $allowedHost) {
+                    header('HTTP/1.1 403 Forbidden');
+                    die('Access Denied');
+                }
+            }
             // 检查是否存在转换图片
             if (!is_file($saveFile)) {
                 $result = PostsPic_Plugin::ToWebPWithGD($imgPath, $saveFile);
             }
             // 输出图片
             if ($result) {
+                // 设置缓存控制头
+                $expires = 60 * 60 * 24 * 7; // 7天
+                header('Cache-Control: public, max-age=' . $expires);
+                header('Pragma: cache');
+                header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $expires) . ' GMT');
                 header('Content-Type: image/jpeg');
                 readfile($saveFile);
                 return;

@@ -70,15 +70,23 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
         echo '<h4>源码：<a href="http://github.com/zgcwkjOpenProject/Typecho_Plugins_PostsPic" target="_blank">PostsPic</a></h4>';
         echo '<h4>缓存：<a href="' . $options->index . '/piClear" target="_blank">清理缓存文件</a></h4>';
         echo '<hr>';
+        // 图片防盗链
+        $picLink = new Typecho_Widget_Helper_Form_Element_Radio(
+            'picLink',
+            array(true => _t('启用'), false => _t('停用')),
+            true,
+            '图片防盗链',
+            '设置图片防盗链（启用后将屏蔽外站访问图片）');
+        $form->addInput($picLink);
         // 图片质量
-        $quality = new Typecho_Widget_Helper_Form_Element_Radio(
-            'quality',
+        $picQuality = new Typecho_Widget_Helper_Form_Element_Radio(
+            'picQuality',
             array('20' => _t('20'), '50' => _t('50'), '80' => _t('80'), '100' => _t('100')),
             '80',
             '图片质量',
             '设置转换后的图片格式质量（最佳建议 80）'
         );
-        $form->addInput($quality);
+        $form->addInput($picQuality);
         // 图片格式
         $picExt = new Typecho_Widget_Helper_Form_Element_Radio(
             'picExt',
@@ -150,7 +158,7 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
             }
             // 生成新地址
             $cacheFile = self::$cacheDir . '/' . md5($m['path']) . $cfg->picExt;
-            if (file_exists(__TYPECHO_ROOT_DIR__ . $cacheFile)) {
+            if (!$cfg->picLink && file_exists(__TYPECHO_ROOT_DIR__ . $cacheFile)) {
                 $mUrl = self::lujin($options->siteUrl . $cacheFile);
             } else {
                 $mUrl = $options->index . '/piMark?' . base64_encode($m['path']);
@@ -286,10 +294,11 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
             }
         }
         // 生成新文件
+        $quality = $cfg->picQuality;
         if ($cfg->picExt == '.webp') {
-            $result = imagewebp($resizedImage, $outputFile, $cfg->quality);
+            $result = imagewebp($resizedImage, $outputFile, $quality);
         } else {
-            $result = imagejpeg($resizedImage, $outputFile, $cfg->quality);
+            $result = imagejpeg($resizedImage, $outputFile, $quality);
         }
         // 销毁图像资源，释放内存
         imagedestroy($image);
