@@ -25,9 +25,15 @@ class PostsPic_Action extends Typecho_Widget
         $parts = explode('?', $requestUri);
         $imgParam = $parts[count($parts) - 1];
         // 文件信息
-        $imgTemp = base64_decode($imgParam);
-        $saveFile = $dirCache . '/' . md5($imgTemp) . $cfg->picExt; 
-        $imgPath = __TYPECHO_ROOT_DIR__ . $imgTemp;
+        $urlParam = $imgParam;
+        $urlEncrypt = $cfg->urlEncrypt;
+        if ($urlEncrypt == 'sha256') {
+            $urlParam = PostsPic_Plugin::decrypt($options->index, $urlParam);
+        } else {
+            $urlParam = base64_decode($imgParam);
+        }
+        $saveFile = $dirCache . '/' . md5($urlParam) . $cfg->picExt; 
+        $imgPath = __TYPECHO_ROOT_DIR__ . $urlParam;
         // 生成文件
         if (file_exists($imgPath)) {
             $result = true;
