@@ -298,8 +298,7 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
                 return false; // 不支持的图像类型
         }
         // 检查图像是否成功创建
-        if (!$image)
-            return false;
+        if (!$image) return false;
         // 使用 GD 库对图像进行等比缩放
         $resizedImage = imagescale($image, $newWidth, $newHeight);
         // 如果有水印图片，添加水印
@@ -311,8 +310,6 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
             $watermark = imagecreatefrompng($watermarkFile);
             // 检查水印图片是否成功创建
             if ($watermark) {
-                // 保留透明度
-                imagesavealpha($watermark, false);
                 // 计算水印缩放比例，使水印更契合原图
                 $maxWatermarkWidth = $newWidth / 8;
                 $watermarkRatio = $maxWatermarkWidth / $w_width;
