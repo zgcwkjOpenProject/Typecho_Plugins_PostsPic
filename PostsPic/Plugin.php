@@ -159,6 +159,9 @@ class PostsPic_Plugin implements Typecho_Plugin_Interface
         for ($i = 0; $i < $count; $i++) {
             $url = $matches[1][$i];
             $m = parse_url($url);
+            if (isset($m['host'])) {
+                if($_SERVER['HTTP_HOST'] != $m['host']) continue;
+            }
             $path = $m['path'];
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             // 避开动态图片
